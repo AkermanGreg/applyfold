@@ -7,7 +7,7 @@ import { generateStructured } from "@/lib/ai/client";
 
 import { type Profile, profileSchema } from "./schema";
 
-export const RESUME_MAX_BYTES = 5 * 1024 * 1024;
+export const RESUME_MAX_BYTES = 4 * 1024 * 1024;
 
 export const RESUME_TYPES = {
   "application/pdf": "pdf",

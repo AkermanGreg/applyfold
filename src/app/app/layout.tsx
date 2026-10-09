@@ -1,3 +1,6 @@
+import { Suspense } from "react";
+
+import { AppNav, AppNavFallback } from "@/components/app/app-nav";
 import { SiteHeader } from "@/components/site-header";
 
 /**
@@ -9,7 +12,12 @@ export default function AppLayout({ children }: LayoutProps<"/app">) {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6">{children}</main>
+      <div className="mx-auto w-full max-w-6xl flex-1 px-4 pt-4 pb-16 sm:px-6">
+        <Suspense fallback={<AppNavFallback />}>
+          <AppNav />
+        </Suspense>
+        <main className="pt-8">{children}</main>
+      </div>
     </>
   );
 }
