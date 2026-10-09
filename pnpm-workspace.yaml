@@ -1,0 +1,8 @@
+allowBuilds:
+  esbuild: true
+  sharp: false
+  simple-git-hooks: true
+  unrs-resolver: false
+minimumReleaseAgeExclude:
+  - '@clerk/nextjs@7.9.13'
+  - drizzle-orm@0.45.4

@@ -28,3 +28,9 @@ test-results/
 *.pem
 npm-debug.log*
 .zshrc
+
+# clerk keyless dev keys
+.clerk/
+
+# local Claude Code launch config
+.claude/
