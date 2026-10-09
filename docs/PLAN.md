@@ -18,6 +18,18 @@ Phase 4 case study.
 | Browser (Phase 2) | Browserbase + Playwright over CDP | Interactive live view for hand-off. **`solveCaptchas: false` on every session** (it defaults to on). |
 | Payments (Phase 3) | RevenueCat Billing (Stripe) + purchases-js | Same project can serve an iOS app later. Server-side entitlement via webhooks + `GET /v1/subscribers`. |
 
+## Decisions made during the build
+
+| Decision | Why |
+|---|---|
+| Cover-letter PDFs are rendered on demand (pdf-lib), not stored in Blob | Always reflects the user's latest edits; one less copy of PII at rest. Blob holds only uploaded resumes. |
+| Authorization checked in every page and Server Action (`requireUserId`), not in proxy route matching | Layouts render in parallel with pages, and Clerk deprecated `createRouteMatcher` protection. |
+| Auth and DB degrade gracefully when env vars are missing | Fresh preview deploys, CI and the demo work before integrations are connected. |
+| Global AI budget guard (`AI_MONTHLY_BUDGET_USD`, default $40) + `ai_usage` log | Hard ceiling on the $100 credit; per-purpose cost data for the case study. |
+| Deterministic answers before AI | Contact, eligibility and EEO questions are filled by code from saved answers; the model only writes essays and the cover letter. Cheaper, and impossible to hallucinate. |
+| Pasted links: ATS APIs first, then one polite fetch with SSRF guards | DNS-resolved private ranges and every redirect hop are rejected; LinkedIn/Indeed/Glassdoor are never fetched. |
+| Demo mode is fully client-side over fixtures | Recruiters can click through everything with zero API spend. |
+
 ## Product rules (from the brief, enforced in code)
 
 - Answers are truthful but favorable, sourced from saved answers. "Authorized to work *without

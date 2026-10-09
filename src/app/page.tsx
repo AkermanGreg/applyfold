@@ -9,6 +9,7 @@ import {
   Sparkles,
   UserCheck,
 } from "lucide-react";
+import Link from "next/link";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -138,6 +139,13 @@ export default function Home() {
               with specific, truthful answers. You review, you approve, it submits.
             </p>
             <WaitlistForm id="hero" />
+            <p className="-mt-4 text-sm text-muted-foreground">
+              Or{" "}
+              <Link href="/demo" className="font-medium text-primary underline-offset-4 hover:underline">
+                try the live demo
+              </Link>{" "}
+              with a sample nurse’s profile. No sign-up.
+            </p>
           </div>
           <ProductPreview />
         </section>

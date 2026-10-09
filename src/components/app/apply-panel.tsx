@@ -175,7 +175,8 @@ export function ApplyPanel({
   pdfHref,
   upgradeHref = "/#pricing",
 }: {
-  applyUrl: string;
+  /** Null in demo mode, where the employers are fictional. */
+  applyUrl: string | null;
   application: ApplicationView | null;
   usage: { used: number; limit: number };
   actions: ApplyPanelActions;
@@ -281,11 +282,15 @@ export function ApplyPanel({
             <CoverLetterEditor letter={application.coverLetter} pdfHref={pdfHref} onSave={actions.saveCoverLetter} />
           ) : null}
           <div className="flex flex-col gap-2 border-t pt-4">
-            <Button asChild>
-              <a href={applyUrl} target="_blank" rel="noreferrer">
-                Open the application <ExternalLink aria-hidden="true" />
-              </a>
-            </Button>
+            {applyUrl ? (
+              <Button asChild>
+                <a href={applyUrl} target="_blank" rel="noreferrer">
+                  Open the application <ExternalLink aria-hidden="true" />
+                </a>
+              </Button>
+            ) : (
+              <Button disabled>Employer site (not available in the demo)</Button>
+            )}
             {application.status === "saved" ? (
               <Button variant="outline" onClick={markApplied} disabled={pending}>
                 <Check aria-hidden="true" /> I’ve applied

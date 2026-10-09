@@ -7,8 +7,18 @@ sales, trades and office roles, not only developers.
 > truthful answers. You review, you approve, it submits. Anything that needs a human (captcha, login)
 > is handed to you in one click.
 
-**Status:** Phase 0 (foundation) complete; Phase 1 (MVP) in progress. See [docs/PLAN.md](docs/PLAN.md)
-for the roadmap, stack decisions and unit costs.
+**Status:** Phase 0 (foundation) and Phase 1 (MVP) built. Try the no-signup demo at `/demo`.
+See [docs/PLAN.md](docs/PLAN.md) for the roadmap, stack decisions and unit costs.
+
+## What works today
+
+- Resume upload (PDF/DOCX) parsed by Claude into an editable profile
+- Preferences and screening answers, asked once and reused on every form
+- Job feed from Greenhouse, Lever, Ashby, USAJobs and Adzuna, scored with a one-line "why it fits"
+- Add any job by link or pasted text
+- One-click tailored cover letter (PDF) and answers, with a copy-paste apply panel
+- Tracker with follow-up reminders
+- Demo mode with a sample nurse's data (no sign-up, no AI calls)
 
 ## Principles
 
