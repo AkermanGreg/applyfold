@@ -12,6 +12,18 @@ const serverEnvSchema = z.object({
   DATABASE_URL: z.url().optional(),
   ANTHROPIC_API_KEY: z.string().min(1).optional(),
   CLERK_SECRET_KEY: z.string().min(1).optional(),
+  /** 32 random bytes, base64. Encrypts PII columns. */
+  ENCRYPTION_KEY: z.string().min(40).optional(),
+  /** Vercel Blob (OIDC on Vercel; token only for local/off-platform use). */
+  BLOB_READ_WRITE_TOKEN: z.string().min(1).optional(),
+  USAJOBS_API_KEY: z.string().min(1).optional(),
+  USAJOBS_EMAIL: z.email().optional(),
+  ADZUNA_APP_ID: z.string().min(1).optional(),
+  ADZUNA_APP_KEY: z.string().min(1).optional(),
+  /** Vercel Cron sends `Authorization: Bearer $CRON_SECRET`. */
+  CRON_SECRET: z.string().min(16).optional(),
+  /** Hard ceiling on AI spend per calendar month, in USD. */
+  AI_MONTHLY_BUDGET_USD: z.coerce.number().positive().default(40),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  doublePrecision,
   index,
   integer,
   jsonb,
@@ -271,6 +272,27 @@ export const usageCounters = pgTable(
       .$onUpdate(() => new Date()),
   },
   (t) => [primaryKey({ columns: [t.userId, t.period, t.kind] })],
+);
+
+/**
+ * One row per Claude call: what it was for, tokens, and estimated cost. Powers the global
+ * monthly budget guard and the per-application cost figures in the case study.
+ */
+export const aiUsage = pgTable(
+  "ai_usage",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: text().references(() => users.id, { onDelete: "set null" }),
+    purpose: text().notNull(),
+    model: text().notNull(),
+    inputTokens: integer().notNull(),
+    outputTokens: integer().notNull(),
+    cacheReadTokens: integer().notNull().default(0),
+    cacheWriteTokens: integer().notNull().default(0),
+    costUsd: doublePrecision().notNull(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("ai_usage_created").on(t.createdAt), index("ai_usage_user_created").on(t.userId, t.createdAt)],
 );
 
 export const waitlist = pgTable("waitlist", {

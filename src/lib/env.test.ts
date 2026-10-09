@@ -6,7 +6,7 @@ const { parseServerEnv } = await import("./env");
 
 describe("parseServerEnv", () => {
   it("treats every integration as optional", () => {
-    expect(parseServerEnv({})).toEqual({ NODE_ENV: "development" });
+    expect(parseServerEnv({})).toEqual({ NODE_ENV: "development", AI_MONTHLY_BUDGET_USD: 40 });
   });
 
   it("ignores empty strings instead of failing validation", () => {
