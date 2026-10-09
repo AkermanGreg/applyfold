@@ -38,6 +38,8 @@ export const users = pgTable("users", {
   plan: planEnum().notNull().default("free"),
   planExpiresAt: timestamp({ withTimezone: true }),
   consentedAt: timestamp({ withTimezone: true }),
+  /** Touched at most hourly; the daily cron only scores matches for recently active users. */
+  lastSeenAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   ...timestamps,
 });
 
