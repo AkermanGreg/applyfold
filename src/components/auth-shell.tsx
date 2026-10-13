@@ -15,8 +15,8 @@ const POINTS = [
 export function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
     <div className="grid min-h-dvh lg:grid-cols-2">
-      <aside className="relative hidden flex-col justify-between overflow-hidden bg-primary p-10 text-primary-foreground lg:flex">
-        <div className="pointer-events-none absolute -top-32 -right-32 size-96 rounded-full bg-brand-warm/20 blur-3xl" aria-hidden="true" />
+      <aside className="relative hidden flex-col justify-between overflow-hidden bg-ink p-10 text-ink-foreground lg:flex">
+        <div className="pointer-events-none absolute -top-32 -right-32 size-[28rem] rounded-full bg-coral/30 blur-3xl" aria-hidden="true" />
         <Link href="/" className="relative flex items-center gap-2 font-semibold tracking-tight">
           <LogoMark inverted />
           <span className="text-lg">{brand.name}</span>
@@ -25,14 +25,14 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
           <p className="font-display text-5xl leading-[1.05]">Applications that sound like you, not like a bot.</p>
           <ul className="mt-10 flex flex-col gap-4">
             {POINTS.map(({ icon: Icon, text }) => (
-              <li key={text} className="flex gap-3 text-primary-foreground/85">
-                <Icon className="mt-0.5 size-5 shrink-0 text-brand-warm" aria-hidden="true" />
+              <li key={text} className="flex gap-3 text-ink-foreground/85">
+                <Icon className="mt-0.5 size-5 shrink-0 text-coral" aria-hidden="true" />
                 {text}
               </li>
             ))}
           </ul>
         </div>
-        <p className="relative text-sm text-primary-foreground/60">Built for nurses, teachers, trades, sales, office roles and tech.</p>
+        <p className="relative text-sm text-ink-foreground/60">Built for nurses, teachers, trades, sales, office roles and tech.</p>
       </aside>
       <main className="flex flex-col items-center justify-center gap-6 bg-muted/40 px-4 py-12">
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight lg:hidden">

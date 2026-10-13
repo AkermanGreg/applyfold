@@ -13,7 +13,7 @@ export function ScoreRing({ score, size = 48 }: { score: number; size?: number }
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const value = Math.max(0, Math.min(100, score));
-  const tone = value >= 80 ? "text-primary" : value >= 60 ? "text-[oklch(0.62_0.11_170)]" : "text-[oklch(0.7_0.12_75)]";
+  const tone = value >= 80 ? "text-ink" : value >= 60 ? "text-coral" : "text-[oklch(0.78_0.13_75)]";
 
   return (
     <div

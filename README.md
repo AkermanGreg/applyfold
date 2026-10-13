@@ -52,3 +52,7 @@ Without env vars the marketing pages still run; sign-in and the waitlist explain
 
 Secrets live only in Vercel environment variables. A pre-commit hook
 (`scripts/check-secrets.mjs`) blocks env files and credential-shaped strings.
+
+## Credits
+
+Landing-page photography from [Unsplash](https://unsplash.com) under the [Unsplash License](https://unsplash.com/license) (free for commercial use). Demo personas and employers are fictional.

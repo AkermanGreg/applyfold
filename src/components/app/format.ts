@@ -18,9 +18,3 @@ export function formatPosted(iso: string | null, now = Date.now()): string | nul
 }
 
 export const REMOTE_LABEL = { remote: "Remote", hybrid: "Hybrid", onsite: "On-site", unknown: null } as const;
-
-export function scoreTone(score: number) {
-  if (score >= 80) return "bg-primary text-primary-foreground";
-  if (score >= 60) return "bg-accent text-accent-foreground";
-  return "bg-muted text-muted-foreground";
-}
