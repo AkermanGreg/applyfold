@@ -55,6 +55,37 @@ export function detectRemote(...hints: (string | null | undefined | boolean)[]):
   return "unknown";
 }
 
+const MAX_SALARY = 10_000_000;
+
+/**
+ * Convert a posted pay figure to a yearly amount. Sources mix hourly ("per-hour-wage", "1 HOUR"),
+ * monthly and yearly figures; storing them all yearly keeps salary filters honest. Unknown or
+ * one-off intervals return null rather than a misleading number.
+ */
+export function annualSalary(value: number | null | undefined, interval: string | null | undefined): number | null {
+  if (value == null || !Number.isFinite(value) || value <= 0) return null;
+  const unit = (interval ?? "year").toLowerCase();
+  const factor = unit.includes("hour")
+    ? 2080
+    : unit.includes("day")
+      ? 260
+      : unit.includes("week")
+        ? 52
+        : unit.includes("month")
+          ? 12
+          : unit.includes("year") || unit.includes("annual")
+            ? 1
+            : null;
+  return factor ? sanitizeSalary(value * factor) : null;
+}
+
+/** Last line of defence before the integer column: whole, positive, plausible. */
+export function sanitizeSalary(value: number | null | undefined): number | null {
+  if (value == null || !Number.isFinite(value)) return null;
+  const rounded = Math.round(value);
+  return rounded > 0 && rounded <= MAX_SALARY ? rounded : null;
+}
+
 /** Aggregators get a posted-date cutoff; ATS boards only list open roles, so they don't. */
 export function isFreshEnough(postedAt: Date | null, maxAgeDays: number, now = new Date()): boolean {
   if (!postedAt) return true;

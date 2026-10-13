@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { politeFetchJson } from "@/lib/http";
 
-import { detectRemote } from "../normalize";
+import { annualSalary, detectRemote } from "../normalize";
 import { htmlToText } from "../text";
 import type { NormalizedJob } from "../types";
 
@@ -18,7 +18,12 @@ const leverPosting = z.looseObject({
   lists: z.array(z.looseObject({ text: z.string(), content: z.string() })).nullish(),
   additionalPlain: z.string().nullish(),
   salaryRange: z
-    .looseObject({ min: z.number().nullish(), max: z.number().nullish(), currency: z.string().nullish() })
+    .looseObject({
+      min: z.number().nullish(),
+      max: z.number().nullish(),
+      currency: z.string().nullish(),
+      interval: z.string().nullish(),
+    })
     .nullish(),
 });
 
@@ -44,8 +49,8 @@ export function mapLeverPostings(slug: string, json: unknown, companyName?: stri
       company: companyName || titleCase(slug),
       location,
       remote: detectRemote(workplace, location),
-      salaryMin: posting.salaryRange?.min ?? null,
-      salaryMax: posting.salaryRange?.max ?? null,
+      salaryMin: annualSalary(posting.salaryRange?.min, posting.salaryRange?.interval),
+      salaryMax: annualSalary(posting.salaryRange?.max, posting.salaryRange?.interval),
       salaryCurrency: posting.salaryRange?.currency ?? null,
       description,
       applyUrl: posting.applyUrl ?? posting.hostedUrl,

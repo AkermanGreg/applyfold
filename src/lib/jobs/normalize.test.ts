@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { dedupeKey, detectRemote, isFreshEnough, normalizeCompany, normalizeTitle } from "./normalize";
+import { annualSalary, dedupeKey, detectRemote, isFreshEnough, normalizeCompany, normalizeTitle, sanitizeSalary } from "./normalize";
 import { htmlToText } from "./text";
 
 describe("normalizeTitle", () => {
@@ -64,5 +64,23 @@ describe("htmlToText", () => {
   it("drops scripts and truncates very long text", () => {
     expect(htmlToText("<p>Hi</p><script>alert(1)</script>")).toBe("Hi");
     expect(htmlToText(`<p>${"a".repeat(50)}</p>`, 10)).toBe(`${"a".repeat(10)}…`);
+  });
+});
+
+describe("salary normalization", () => {
+  it("annualizes hourly, monthly and yearly figures from any source's interval names", () => {
+    expect(annualSalary(22.69, "per-hour-wage")).toBe(47195);
+    expect(annualSalary(25, "1 HOUR")).toBe(52000);
+    expect(annualSalary(1700, "per-month-salary")).toBe(20400);
+    expect(annualSalary(85000, "per-year-salary")).toBe(85000);
+    expect(annualSalary(85000, null)).toBe(85000);
+  });
+
+  it("refuses one-off or nonsense figures", () => {
+    expect(annualSalary(5000, "one-time")).toBeNull();
+    expect(annualSalary(0, "1 YEAR")).toBeNull();
+    expect(sanitizeSalary(4.5)).toBe(5);
+    expect(sanitizeSalary(99_999_999_999)).toBeNull();
+    expect(sanitizeSalary(Number.NaN)).toBeNull();
   });
 });

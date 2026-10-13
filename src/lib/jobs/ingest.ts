@@ -5,7 +5,7 @@ import { and, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { serverEnv } from "@/lib/env";
 
-import { dedupeKey } from "./normalize";
+import { dedupeKey, sanitizeSalary } from "./normalize";
 import { SEED_BOARDS } from "./seed-boards";
 import { searchAdzuna } from "./sources/adzuna";
 import { fetchAshbyBoard } from "./sources/ashby";
@@ -38,7 +38,12 @@ export function uniqueByDedupeKey(jobs: NormalizedJob[]) {
     const key = dedupeKey(job);
     if (!seen.has(key)) seen.set(key, job);
   }
-  return [...seen.entries()].map(([key, job]) => ({ ...job, dedupeKey: key }));
+  return [...seen.entries()].map(([key, job]) => ({
+    ...job,
+    dedupeKey: key,
+    salaryMin: sanitizeSalary(job.salaryMin),
+    salaryMax: sanitizeSalary(job.salaryMax),
+  }));
 }
 
 async function upsertJobs(jobs: NormalizedJob[], sourceId: string | null) {

@@ -2,13 +2,14 @@ import { z } from "zod";
 
 import { politeFetchJson } from "@/lib/http";
 
-import { detectRemote } from "../normalize";
+import { annualSalary, detectRemote } from "../normalize";
 import { htmlToText } from "../text";
 import type { NormalizedJob } from "../types";
 
 const salaryComponent = z.looseObject({
   compensationType: z.string(),
   currencyCode: z.string().nullish(),
+  interval: z.string().nullish(),
   minValue: z.number().nullish(),
   maxValue: z.number().nullish(),
 });
@@ -48,8 +49,8 @@ export function mapAshbyBoard(slug: string, json: unknown, companyName?: string 
         company: companyName || titleCase(slug),
         location,
         remote: detectRemote(job.isRemote === true, job.workplaceType, location),
-        salaryMin: salary?.minValue ?? null,
-        salaryMax: salary?.maxValue ?? null,
+        salaryMin: annualSalary(salary?.minValue, salary?.interval),
+        salaryMax: annualSalary(salary?.maxValue, salary?.interval),
         salaryCurrency: salary?.currencyCode ?? null,
         description: job.descriptionPlain?.trim() || htmlToText(job.descriptionHtml ?? ""),
         applyUrl: job.applyUrl ?? job.jobUrl,
