@@ -34,3 +34,7 @@ npm-debug.log*
 
 # local Claude Code launch config
 .claude/
+
+# vendor agent skills installed by Vercel Marketplace integrations (local tooling)
+.agents/
+skills-lock.json
