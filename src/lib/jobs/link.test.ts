@@ -18,6 +18,25 @@ describe("parseJobLink", () => {
     expect(parseJobLink("https://jobs.ashbyhq.com/headway/1f473f3b-437d")).toMatchObject({ kind: "ashby", slug: "headway" });
   });
 
+  it("recognizes Workable, SmartRecruiters and Rippling links", () => {
+    expect(parseJobLink("https://apply.workable.com/humanmade/j/B8AC49A63F/")).toEqual({
+      kind: "workable",
+      slug: "humanmade",
+      shortcode: "B8AC49A63F",
+    });
+    expect(parseJobLink("https://apply.workable.com/j/B8AC49A63F/apply")).toEqual({ kind: "workable", slug: null, shortcode: "B8AC49A63F" });
+    expect(parseJobLink("https://jobs.smartrecruiters.com/Sodexo/744000155154759-workplace-experience-coordinator")).toEqual({
+      kind: "smartrecruiters",
+      company: "Sodexo",
+      id: "744000155154759",
+    });
+    expect(parseJobLink("https://ats.rippling.com/xwp/jobs/9e0d7dfe-3408-432f-8fa7-5c55caf57899")).toEqual({
+      kind: "rippling",
+      slug: "xwp",
+      id: "9e0d7dfe-3408-432f-8fa7-5c55caf57899",
+    });
+  });
+
   it("refuses sites whose terms forbid automated access", () => {
     expect(parseJobLink("https://www.linkedin.com/jobs/view/123")).toEqual({ kind: "blocked", host: "linkedin.com" });
     expect(parseJobLink("https://uk.indeed.com/viewjob?jk=abc")).toEqual({ kind: "blocked", host: "indeed.com" });

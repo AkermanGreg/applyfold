@@ -5,6 +5,9 @@ export type ParsedJobLink =
   | { kind: "greenhouse"; token: string; id: string }
   | { kind: "lever"; slug: string; id: string }
   | { kind: "ashby"; slug: string; id: string }
+  | { kind: "workable"; slug: string | null; shortcode: string }
+  | { kind: "smartrecruiters"; company: string; id: string }
+  | { kind: "rippling"; slug: string; id: string }
   | { kind: "page"; url: string }
   | { kind: "blocked"; host: string }
   | { kind: "invalid" };
@@ -34,6 +37,18 @@ export function parseJobLink(input: string): ParsedJobLink {
   }
   if (host === "jobs.lever.co" && parts[0] && parts[1]) return { kind: "lever", slug: parts[0], id: parts[1] };
   if (host === "jobs.ashbyhq.com" && parts[0] && parts[1]) return { kind: "ashby", slug: parts[0], id: parts[1] };
+  if (host === "apply.workable.com") {
+    // apply.workable.com/{slug}/j/{shortcode}/ or apply.workable.com/j/{shortcode}
+    const j = parts.indexOf("j");
+    if (j >= 0 && parts[j + 1]) return { kind: "workable", slug: j > 0 ? parts[0]! : null, shortcode: parts[j + 1]! };
+  }
+  if ((host === "jobs.smartrecruiters.com" || host === "careers.smartrecruiters.com") && parts[0] && parts[1]) {
+    const id = parts[1].match(/^(\d+)/)?.[1];
+    if (id) return { kind: "smartrecruiters", company: parts[0], id };
+  }
+  if (host === "ats.rippling.com" && parts[0] && parts[1] === "jobs" && parts[2]) {
+    return { kind: "rippling", slug: parts[0], id: parts[2] };
+  }
 
   // Refuse private-network targets so a pasted link can't be used to probe internal services.
   if (host === "localhost" || /^(127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.)/.test(host) || host.endsWith(".internal") || host === "[::1]") {

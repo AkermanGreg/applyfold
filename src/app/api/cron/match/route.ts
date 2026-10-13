@@ -2,25 +2,19 @@ import { desc, eq, gte } from "drizzle-orm";
 
 import { db, schema } from "@/db";
 import { AiBudgetExceededError } from "@/lib/ai/client";
-import { serverEnv } from "@/lib/env";
-import { ingestBoards } from "@/lib/jobs/ingest";
+import { isAuthorizedCron } from "@/lib/cron";
 import { runMatching } from "@/lib/matching/run";
 
-// Hobby allows 300s; leave headroom for the matching pass after ingestion.
 export const maxDuration = 300;
 
 const ACTIVE_WINDOW_DAYS = 14;
 const MAX_USERS_PER_RUN = 50;
 
-/** Daily job: refresh ATS boards, then score new jobs for recently active users. */
+/** Daily 06:00 UTC, an hour after ingestion: score new jobs for recently active users. */
 export async function GET(request: Request) {
-  const secret = serverEnv().CRON_SECRET;
-  if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
-    return new Response("Unauthorized", { status: 401 });
-  }
+  if (!isAuthorizedCron(request)) return new Response("Unauthorized", { status: 401 });
 
   const started = Date.now();
-  const boards = await ingestBoards({ deadline: started + 180_000 });
 
   const since = new Date(Date.now() - ACTIVE_WINDOW_DAYS * 86_400_000);
   const activeUsers = await db()
@@ -42,5 +36,5 @@ export async function GET(request: Request) {
     }
   }
 
-  return Response.json({ boards, matching, ms: Date.now() - started });
+  return Response.json({ matching, ms: Date.now() - started });
 }

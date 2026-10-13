@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { prefilter, type PrefilterPreferences, titleOverlap } from "./prefilter";
+import { prefilter, type PrefilterPreferences, remoteRegionAllows, titleOverlap } from "./prefilter";
 
 const nurse: PrefilterPreferences = {
   targetTitles: ["Registered Nurse", "ICU Nurse"],
@@ -47,5 +47,28 @@ describe("prefilter", () => {
 
   it("keeps every location when the user didn't set one", () => {
     expect(prefilter({ ...job, location: "Denver, CO" }, { ...nurse, locations: [] }).keep).toBe(true);
+  });
+});
+
+describe("remoteRegionAllows", () => {
+  it("keeps open or home-region remote roles", () => {
+    expect(remoteRegionAllows("Remote", "USD")).toBe(true);
+    expect(remoteRegionAllows(null, "USD")).toBe(true);
+    expect(remoteRegionAllows("Remote - Worldwide", "USD")).toBe(true);
+    expect(remoteRegionAllows("Remote (United States)", "USD")).toBe(true);
+    expect(remoteRegionAllows("Remote - US or Canada", "CAD")).toBe(true);
+    expect(remoteRegionAllows("Remote, UK", "GBP")).toBe(true);
+  });
+
+  it("drops remote roles restricted to other countries", () => {
+    expect(remoteRegionAllows("Remote - Pakistan", "USD")).toBe(false);
+    expect(remoteRegionAllows("Remote (Australia)", "USD")).toBe(false);
+    expect(remoteRegionAllows("Remote - LATAM", "GBP")).toBe(false);
+  });
+
+  it("applies inside the prefilter", () => {
+    const job = { title: "Registered Nurse", location: "Remote - Philippines", remote: "remote" as const, salaryMax: null };
+    expect(prefilter(job, { ...nurse, remote: "remote_only", salaryCurrency: "USD" }).keep).toBe(false);
+    expect(prefilter({ ...job, location: "Remote (US)" }, { ...nurse, remote: "remote_only", salaryCurrency: "USD" }).keep).toBe(true);
   });
 });

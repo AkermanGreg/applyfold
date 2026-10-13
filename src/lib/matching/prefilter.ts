@@ -6,7 +6,35 @@ export type PrefilterPreferences = {
   locations: string[];
   remote: "any" | "remote_only" | "hybrid_ok" | "onsite_ok";
   salaryMin: number | null;
+  /** Hint for the user's country when judging "Remote - <country>" listings. */
+  salaryCurrency?: string;
 };
+
+/** Words that make a remote listing open to the user's country (by salary currency). */
+const HOME_REGIONS: Record<string, RegExp> = {
+  USD: /\b(united states|usa|u\.s\.|us|america|americas|north america)\b/,
+  CAD: /\b(canada|north america|americas)\b/,
+  GBP: /\b(united kingdom|uk|britain|england|scotland|wales|europe|emea)\b/,
+  EUR: /\b(europe|eu|emea)\b/,
+  AUD: /\b(australia|apac|anz|oceania)\b/,
+};
+
+const ANYWHERE = /\b(worldwide|anywhere|global|globally|international)\b/;
+
+const PLACES =
+  /\b(united states|usa|u\.s\.|us|canada|mexico|brazil|argentina|colombia|chile|peru|latam|latin america|united kingdom|uk|ireland|germany|france|spain|portugal|italy|netherlands|belgium|poland|romania|ukraine|serbia|europe|emea|india|pakistan|bangladesh|philippines|vietnam|indonesia|malaysia|singapore|japan|china|korea|apac|asia|australia|new zealand|africa|nigeria|kenya|south africa|egypt|israel|uae|turkey)\b/;
+
+/**
+ * Remote listings often hide a country restriction in the location ("Remote - Pakistan"). Allow
+ * when no place is named, when it's open worldwide, or when it names the user's region.
+ */
+export function remoteRegionAllows(location: string | null, currency: string | undefined): boolean {
+  if (!location) return true;
+  const text = location.toLowerCase();
+  if (!PLACES.test(text) || ANYWHERE.test(text)) return true;
+  const home = HOME_REGIONS[currency ?? "USD"];
+  return home ? home.test(text) : true;
+}
 
 export type PrefilterJob = {
   title: string;
@@ -36,6 +64,7 @@ export function titleOverlap(jobTitle: string, targets: string[]): number {
 }
 
 function locationFits(job: PrefilterJob, preferences: PrefilterPreferences): boolean {
+  if (job.remote === "remote" && !remoteRegionAllows(job.location, preferences.salaryCurrency)) return false;
   if (preferences.remote === "remote_only") return job.remote === "remote";
   if (job.remote === "remote") return true;
   if (preferences.remote === "hybrid_ok" && job.remote === "onsite") return false;

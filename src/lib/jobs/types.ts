@@ -1,4 +1,8 @@
-export type SourceKind = "greenhouse" | "lever" | "ashby" | "usajobs" | "adzuna" | "manual";
+/** ATS boards list only open roles for one employer; aggregators mix many employers. */
+export const ATS_KINDS = ["greenhouse", "lever", "ashby", "workable", "rippling", "smartrecruiters"] as const;
+export const AGGREGATOR_KINDS = ["usajobs", "adzuna", "remoteok", "themuse", "jsearch", "hn", "rss"] as const;
+
+export type SourceKind = (typeof ATS_KINDS)[number] | (typeof AGGREGATOR_KINDS)[number] | "manual";
 export type RemoteType = "remote" | "hybrid" | "onsite" | "unknown";
 
 /** A question exposed by the source's own application form (Greenhouse only, for now). */

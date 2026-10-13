@@ -13,6 +13,9 @@ import { safeFetchHtml } from "./safe-fetch";
 import { mapAshbyBoard } from "./sources/ashby";
 import { mapGreenhouseBoard, mapGreenhouseQuestions } from "./sources/greenhouse";
 import { mapLeverPostings } from "./sources/lever";
+import { fetchRipplingBoard } from "./sources/rippling";
+import { fetchSmartRecruitersPosting } from "./sources/smartrecruiters";
+import { fetchWorkableAccount } from "./sources/workable";
 import { htmlToText } from "./text";
 import type { NormalizedJob } from "./types";
 
@@ -94,6 +97,22 @@ async function fromLink(userId: string, link: string): Promise<NormalizedJob> {
       );
       const job = mapAshbyBoard(parsed.slug, json).find((candidate) => candidate.externalId.endsWith(`:${parsed.id}`));
       if (!job) throw new AddJobError("That Ashby posting is closed or unlisted.");
+      return job;
+    }
+    case "workable": {
+      if (parsed.slug) {
+        const job = (await fetchWorkableAccount(parsed.slug)).find((candidate) => candidate.externalId.endsWith(`:${parsed.shortcode}`));
+        if (job) return job;
+      }
+      // Short links (/j/{code}) don't name the account; read the page instead.
+      const page = await safeFetchHtml(link);
+      return fromText(userId, htmlToText(page.html), page.url);
+    }
+    case "smartrecruiters":
+      return fetchSmartRecruitersPosting(parsed.company, parsed.id);
+    case "rippling": {
+      const job = (await fetchRipplingBoard(parsed.slug)).find((candidate) => candidate.externalId.endsWith(`:${parsed.id}`));
+      if (!job) throw new AddJobError("That Rippling posting is closed or unlisted.");
       return job;
     }
     case "page": {

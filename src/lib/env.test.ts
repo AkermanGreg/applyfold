@@ -6,7 +6,7 @@ const { parseServerEnv } = await import("./env");
 
 describe("parseServerEnv", () => {
   it("treats every integration as optional", () => {
-    expect(parseServerEnv({})).toEqual({ NODE_ENV: "development", AI_MONTHLY_BUDGET_USD: 40 });
+    expect(parseServerEnv({})).toEqual({ NODE_ENV: "development", AI_MONTHLY_BUDGET_USD: 40, ENABLE_THE_MUSE: false });
   });
 
   it("ignores empty strings instead of failing validation", () => {
@@ -15,6 +15,11 @@ describe("parseServerEnv", () => {
 
   it("rejects a malformed DATABASE_URL", () => {
     expect(() => parseServerEnv({ DATABASE_URL: "not a url" })).toThrow();
+  });
+
+  it("parses the opt-in flag for The Muse", () => {
+    expect(parseServerEnv({ ENABLE_THE_MUSE: "1" }).ENABLE_THE_MUSE).toBe(true);
+    expect(parseServerEnv({ ENABLE_THE_MUSE: "false" }).ENABLE_THE_MUSE).toBe(false);
   });
 
   it("keeps valid values", () => {

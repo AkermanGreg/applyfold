@@ -1,8 +1,9 @@
 import "server-only";
 
-import { and, desc, eq, gte, isNull, notInArray, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, notInArray, or, sql } from "drizzle-orm";
 
 import { db, schema } from "@/db";
+import { ATS_KINDS } from "@/lib/jobs/types";
 import { profileToFacts } from "@/lib/profile/schema";
 import { getProfileRecord } from "@/lib/profile/store";
 
@@ -46,7 +47,7 @@ export async function runMatching(userId: string): Promise<{ scored: number }> {
         notInArray(schema.jobs.id, alreadyMatched),
         // ATS boards list only open roles: no age cutoff. Aggregators: recent postings only.
         or(
-          sql`${schema.jobs.sourceKind} in ('greenhouse', 'lever', 'ashby', 'manual')`,
+          inArray(schema.jobs.sourceKind, [...ATS_KINDS, "manual"]),
           gte(schema.jobs.postedAt, cutoff),
         ),
       ),

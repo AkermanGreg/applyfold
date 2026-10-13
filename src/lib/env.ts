@@ -20,6 +20,14 @@ const serverEnvSchema = z.object({
   USAJOBS_EMAIL: z.email().optional(),
   ADZUNA_APP_ID: z.string().min(1).optional(),
   ADZUNA_APP_KEY: z.string().min(1).optional(),
+  /** Paid RapidAPI key; JSearch only runs when set. */
+  JSEARCH_API_KEY: z.string().min(1).optional(),
+  /** The Muse is opt-in: its terms restrict competing services (see sources/themuse.ts). */
+  ENABLE_THE_MUSE: z
+    .enum(["0", "1", "true", "false"])
+    .optional()
+    .transform((value) => value === "1" || value === "true"),
+  THE_MUSE_API_KEY: z.string().min(1).optional(),
   /** Vercel Cron sends `Authorization: Bearer $CRON_SECRET`. */
   CRON_SECRET: z.string().min(16).optional(),
   /** Comma-separated emails with unlimited access (owner/staff). Never committed to the repo. */

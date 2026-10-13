@@ -44,16 +44,25 @@ Phase 4 case study.
 
 | Source | Status | Notes |
 |---|---|---|
-| Greenhouse, Lever, Ashby | Phase 1 | Public, no key. Greenhouse exposes application questions (`?questions=true`). Applying always happens on the employer's page. |
-| USAJobs | Phase 1 | Free key. Strong non-tech coverage (VA nursing, trades). |
-| Adzuna | Phase 1 | Broadest legit non-tech feed (US/UK). Attribution label required; commercial licence needed after the trial, before marketing launch. |
-| Paste a link / paste text | Phase 1 | Covers everything else, including postings the user found themselves. |
+| Greenhouse, Lever, Ashby, SmartRecruiters | On | Official public APIs. Greenhouse also exposes each form's questions. Applying always happens on the employer's page. |
+| Workable, Rippling | On | Public career-widget feeds (undocumented): one gentle request per board per day, capped per board. |
+| USAJobs | On (free key) | US federal roles; strong non-tech coverage. |
+| Adzuna | On (free key) | Broadest legit non-tech feed (US/UK). Attribution label required; commercial licence needed after the trial. |
+| Remote OK | On | Terms: followed link back + "via Remote OK" credit (shown on every listing). |
+| Hacker News "Who is hiring" | On | Official Algolia HN API; tech-only; links to the original comment. |
+| jobs.wordpress.net, WP Remote Work | On | RSS published for syndication; every listing links back. |
+| JSearch (RapidAPI) | Off until `JSEARCH_API_KEY` | Paid; Google for Jobs coverage incl. non-tech. We only link out, never fetch publisher sites. |
+| The Muse | Off until `ENABLE_THE_MUSE=1` | Terms §3.4 forbid replicating The Muse's services; owner's call. |
+| Paste a link / paste text | On | Any posting the user found; LinkedIn/Indeed/Glassdoor are never fetched (paste the text). |
 | Remotive, Himalayas | Rejected | Terms forbid redistribution and using listings to gather signups. |
-| The Muse | Rejected | Terms forbid replicating its service. |
-| JSearch | Rejected | Resells scraped LinkedIn/Indeed data (conflicts with our non-goals). |
-| Rippling | Rejected | No public API; would be scraping. |
+| Working Nomads | Not yet | No published terms found. |
+| JazzHR pages, We Work Remotely, Jobicy | Rejected | HTML scraping or bot-check walls. |
+| LinkedIn, Indeed, Glassdoor, ZipRecruiter, Built In | Never | Terms forbid automated access. |
 
-ATS boards list only open roles, so no posted-date cutoff for them; aggregators get one.
+~140 seeded company boards (verified live, Oct 2026) refresh daily at 05:00 UTC, least recently
+fetched first so every board gets its turn; matching runs at 06:00 UTC. ATS boards list only open
+roles, so no posted-date cutoff for them; aggregators get a 30-day cutoff. Remote listings
+restricted to other countries ("Remote - Pakistan") are filtered out using the user's region.
 
 ## Pricing
 

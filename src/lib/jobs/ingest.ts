@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, eq, isNull, notInArray, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
 
 import { db, schema } from "@/db";
 import { serverEnv } from "@/lib/env";
@@ -10,15 +10,26 @@ import { SEED_BOARDS } from "./seed-boards";
 import { searchAdzuna } from "./sources/adzuna";
 import { fetchAshbyBoard } from "./sources/ashby";
 import { fetchGreenhouseBoard } from "./sources/greenhouse";
+import { fetchHnWhoIsHiring } from "./sources/hn";
+import { searchJSearch } from "./sources/jsearch";
 import { fetchLeverPostings } from "./sources/lever";
+import { fetchRemoteOk } from "./sources/remoteok";
+import { fetchRipplingBoard } from "./sources/rippling";
+import { fetchRssFeed, RSS_FEEDS } from "./sources/rss";
+import { fetchSmartRecruitersPostings } from "./sources/smartrecruiters";
+import { searchTheMuse } from "./sources/themuse";
 import { searchUsaJobs } from "./sources/usajobs";
-import type { NormalizedJob } from "./types";
+import { fetchWorkableAccount } from "./sources/workable";
+import { ATS_KINDS, type NormalizedJob } from "./types";
 
-const BOARD_FETCHERS = {
+const BOARD_FETCHERS: Record<(typeof ATS_KINDS)[number], (slug: string, companyName?: string | null) => Promise<NormalizedJob[]>> = {
   greenhouse: fetchGreenhouseBoard,
   lever: fetchLeverPostings,
   ashby: fetchAshbyBoard,
-} as const;
+  workable: fetchWorkableAccount,
+  rippling: fetchRipplingBoard,
+  smartrecruiters: fetchSmartRecruitersPostings,
+};
 
 /** Drop in-batch duplicates: Postgres rejects an upsert that touches the same row twice. */
 export function uniqueByDedupeKey(jobs: NormalizedJob[]) {
@@ -59,29 +70,32 @@ async function upsertJobs(jobs: NormalizedJob[], sourceId: string | null) {
 async function ensureSeedSources() {
   await db()
     .insert(schema.jobSources)
-    .values(SEED_BOARDS.map((board) => ({ kind: board.kind, slug: board.slug, companyName: board.companyName })))
+    .values(SEED_BOARDS.map((board) => ({ kind: board.kind, slug: board.slug, companyName: board.companyName ?? null })))
     .onConflictDoNothing();
 }
 
 export type IngestReport = { source: string; jobs: number; error?: string };
 
 /**
- * Refresh every enabled ATS board. Boards list only open roles, so a job that vanished from
- * its board is marked closed. One failing board never stops the run.
+ * Refresh enabled ATS boards, least recently fetched first, until the deadline. With ~140
+ * boards a run may not reach them all; the rotation makes sure every board gets its turn.
+ * Boards list only open roles, so a job that vanished from its board is marked closed. One
+ * failing board never stops the run.
  */
 export async function ingestBoards(options: { deadline: number }): Promise<IngestReport[]> {
   await ensureSeedSources();
   const sources = await db()
     .select()
     .from(schema.jobSources)
-    .where(and(eq(schema.jobSources.enabled, true), sql`${schema.jobSources.kind} in ('greenhouse', 'lever', 'ashby')`));
+    .where(and(eq(schema.jobSources.enabled, true), inArray(schema.jobSources.kind, [...ATS_KINDS])))
+    .orderBy(sql`${schema.jobSources.lastFetchedAt} asc nulls first`);
 
   const reports: IngestReport[] = [];
   for (const source of sources) {
     if (Date.now() > options.deadline) break;
     const label = `${source.kind}:${source.slug}`;
     try {
-      const fetcher = BOARD_FETCHERS[source.kind as keyof typeof BOARD_FETCHERS];
+      const fetcher = BOARD_FETCHERS[source.kind as (typeof ATS_KINDS)[number]];
       const jobs = await fetcher(source.slug, source.companyName);
       const keys = await upsertJobs(jobs, source.id);
       await db()
@@ -111,6 +125,27 @@ export async function ingestBoards(options: { deadline: number }): Promise<Inges
   return reports;
 }
 
+/** Global feeds that aren't keyword-searchable: pulled whole once a day. */
+export async function ingestGlobalFeeds(options: { deadline: number }): Promise<IngestReport[]> {
+  const feeds: { source: string; fetch: () => Promise<NormalizedJob[]> }[] = [
+    { source: "remoteok", fetch: fetchRemoteOk },
+    { source: "hn:whoishiring", fetch: fetchHnWhoIsHiring },
+    ...RSS_FEEDS.map((feed) => ({ source: `rss:${feed.id}`, fetch: () => fetchRssFeed(feed) })),
+  ];
+  const reports: IngestReport[] = [];
+  for (const feed of feeds) {
+    if (Date.now() > options.deadline) break;
+    try {
+      const jobs = await feed.fetch();
+      await upsertJobs(jobs, null);
+      reports.push({ source: feed.source, jobs: jobs.length });
+    } catch (error) {
+      reports.push({ source: feed.source, jobs: 0, error: error instanceof Error ? error.message : String(error) });
+    }
+  }
+  return reports;
+}
+
 /** Keyword searches on aggregators for one user's target titles and locations. */
 export async function ingestForPreferences(preferences: { targetTitles: string[]; locations: string[] }) {
   const env = serverEnv();
@@ -118,7 +153,23 @@ export async function ingestForPreferences(preferences: { targetTitles: string[]
   const location = preferences.locations[0];
   const reports: IngestReport[] = [];
 
+  const run = async (source: string, search: () => Promise<NormalizedJob[]>) => {
+    try {
+      const jobs = await search();
+      await upsertJobs(jobs, null);
+      reports.push({ source, jobs: jobs.length });
+    } catch (error) {
+      reports.push({ source, jobs: 0, error: error instanceof Error ? error.message : String(error) });
+    }
+  };
+
+  if (env.ENABLE_THE_MUSE) await run("themuse", () => searchTheMuse({ location }, env.THE_MUSE_API_KEY));
+
   for (const title of titles) {
+    if (env.JSEARCH_API_KEY) {
+      const apiKey = env.JSEARCH_API_KEY;
+      await run(`jsearch:${title}`, () => searchJSearch({ what: title, where: location }, apiKey));
+    }
     if (env.USAJOBS_API_KEY && env.USAJOBS_EMAIL) {
       try {
         const jobs = await searchUsaJobs(

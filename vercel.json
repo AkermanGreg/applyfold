@@ -3,7 +3,11 @@
   "framework": "nextjs",
   "crons": [
     {
-      "path": "/api/cron/daily",
+      "path": "/api/cron/ingest",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/match",
       "schedule": "0 6 * * *"
     }
   ]

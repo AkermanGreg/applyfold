@@ -101,6 +101,14 @@ export const sourceKindEnum = pgEnum("source_kind", [
   "usajobs",
   "adzuna",
   "manual",
+  "workable",
+  "rippling",
+  "smartrecruiters",
+  "remoteok",
+  "themuse",
+  "jsearch",
+  "hn",
+  "rss",
 ]);
 
 /** A company board (ATS) or aggregator query we ingest from. */

@@ -35,6 +35,25 @@ export async function getFeed(userId: string): Promise<FeedItem[]> {
   return rows.map(({ match, job }) => toFeedItem(match, job));
 }
 
+/**
+ * Aggregators whose terms require visible credit plus a followed link back to their listing.
+ * (Rendered with rel="noreferrer" only, never "nofollow".)
+ */
+const ATTRIBUTION: Partial<Record<string, string>> = {
+  adzuna: "Jobs by Adzuna",
+  remoteok: "via Remote OK",
+  themuse: "via The Muse",
+  hn: "via Hacker News",
+  usajobs: "via USAJOBS",
+};
+
+function attributionFor(job: typeof schema.jobs.$inferSelect): FeedItem["attribution"] {
+  if (!job.sourceUrl) return null;
+  if (job.sourceKind === "rss") return { label: `via ${new URL(job.sourceUrl).hostname.replace(/^www\./, "")}`, url: job.sourceUrl };
+  const label = ATTRIBUTION[job.sourceKind];
+  return label ? { label, url: job.sourceUrl } : null;
+}
+
 export function toFeedItem(
   match: typeof schema.matches.$inferSelect,
   job: typeof schema.jobs.$inferSelect,
@@ -52,7 +71,7 @@ export function toFeedItem(
     score: match.score,
     reason: match.reason,
     status: match.status,
-    attribution: job.sourceKind === "adzuna" && job.sourceUrl ? { label: "Jobs by Adzuna", url: job.sourceUrl } : null,
+    attribution: attributionFor(job),
   };
 }
 
