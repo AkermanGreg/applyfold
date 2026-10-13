@@ -9,7 +9,7 @@ import { type Profile, profileSchema } from "@/lib/profile/schema";
 import { saveProfile } from "@/lib/profile/store";
 import { putUserFile } from "@/lib/storage";
 import { consumeUsage, releaseUsage } from "@/lib/usage";
-import { effectivePlan, ensureUser } from "@/lib/users";
+import { ensureUser, getEntitlement } from "@/lib/users";
 
 export type UploadState = { status: "idle" } | { status: "error"; message: string } | { status: "done" };
 
@@ -22,7 +22,7 @@ export async function uploadResume(_previous: UploadState, formData: FormData): 
   if (file.size > RESUME_MAX_BYTES) return { status: "error", message: "That file is over 4 MB." };
 
   const user = await ensureUser(userId);
-  const usage = await consumeUsage(userId, effectivePlan(user), "resume_parse");
+  const usage = await consumeUsage(userId, getEntitlement(user), "resume_parse");
   if (!usage.ok) return { status: "error", message: `You've parsed ${usage.limit} resumes this month. Edit your profile below instead.` };
 
   try {

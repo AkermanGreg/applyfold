@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 
-import type { FormState } from "@/app/app/preferences/actions";
+import type { FormState } from "@/app/actions/preferences";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,9 +15,11 @@ const selectClass =
 export function PreferencesForm({
   initial,
   action,
+  submitLabel = "Save and find matches",
 }: {
   initial: Preferences | null;
   action: (previous: FormState, formData: FormData) => Promise<FormState>;
+  submitLabel?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, { status: "idle" });
 
@@ -78,7 +80,7 @@ export function PreferencesForm({
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" disabled={pending}>
-          {pending ? "Saving…" : "Save and find matches"}
+          {pending ? "Saving…" : submitLabel}
         </Button>
         <p aria-live="polite" className="text-sm">
           {state.status === "saved" ? <span className="text-primary">{state.message}</span> : null}

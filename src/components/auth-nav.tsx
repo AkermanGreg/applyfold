@@ -13,9 +13,14 @@ export function AuthNav() {
 
 function SignInLink() {
   return (
-    <Button asChild variant="ghost" size="sm">
-      <Link href="/sign-in">Sign in</Link>
-    </Button>
+    <div className="flex items-center gap-1">
+      <Button asChild variant="ghost" size="sm">
+        <Link href="/sign-in">Sign in</Link>
+      </Button>
+      <Button asChild size="sm">
+        <Link href="/sign-up">Get started</Link>
+      </Button>
+    </div>
   );
 }
 

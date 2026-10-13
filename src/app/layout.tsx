@@ -1,6 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
+import { shadcn } from "@clerk/ui/themes";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 
 import { Toaster } from "@/components/ui/sonner";
 import { isAuthConfigured } from "@/lib/auth-config";
@@ -18,6 +19,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+/** Display face for marketing headlines and onboarding titles; the product UI stays in Geist. */
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: "400",
+});
+
 export const metadata: Metadata = {
   title: {
     default: `${brand.name}: AI job applications that sound like you`,
@@ -31,11 +39,25 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        {isAuthConfigured ? <ClerkProvider>{children}</ClerkProvider> : children}
-        <Toaster theme="light" />
+        {isAuthConfigured ? (
+          <ClerkProvider
+            appearance={{ theme: shadcn }}
+            signInUrl="/sign-in"
+            signUpUrl="/sign-up"
+            // Returning users land in the app; new accounts go straight into guided onboarding.
+            signInFallbackRedirectUrl="/app"
+            signUpFallbackRedirectUrl="/app/onboarding"
+            afterSignOutUrl="/"
+          >
+            {children}
+          </ClerkProvider>
+        ) : (
+          children
+        )}
+        <Toaster theme="light" position="top-center" />
       </body>
     </html>
   );

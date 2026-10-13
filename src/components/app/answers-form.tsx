@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 
-import type { FormState } from "@/app/app/preferences/actions";
+import type { FormState } from "@/app/actions/preferences";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { SavedAnswers } from "@/lib/answers/resolve";
@@ -24,15 +24,18 @@ function QuestionInput({ question, value }: { question: StandardQuestion; value:
   if (question.kind === "yes_no") {
     return (
       <fieldset className="flex flex-col gap-2">
-        <legend className="text-sm">{question.prompt}</legend>
-        <div className="flex gap-4 text-sm">
+        <legend className="mb-2 text-sm">{question.prompt}</legend>
+        <div className="grid grid-cols-3 gap-2">
           {[
             ["yes", "Yes"],
             ["no", "No"],
-            ["", "Ask me each time"],
+            ["", "Ask me"],
           ].map(([optionValue, label]) => (
-            <label key={label} className="flex items-center gap-1.5">
-              <input type="radio" name={question.key} value={optionValue} defaultChecked={(value ?? "") === optionValue} />
+            <label
+              key={label}
+              className="flex cursor-pointer items-center justify-center rounded-lg border bg-background px-2 py-2 text-sm transition-colors has-checked:border-primary has-checked:bg-accent has-checked:font-medium has-checked:text-accent-foreground"
+            >
+              <input type="radio" name={question.key} value={optionValue} defaultChecked={(value ?? "") === optionValue} className="sr-only" />
               {label}
             </label>
           ))}
@@ -76,11 +79,11 @@ export function AnswersForm({
     <form action={formAction} className="flex flex-col gap-8">
       {GROUPS.map((group) => (
         <section key={group.id} className="flex flex-col gap-4">
-          <div>
-            <h3 className="font-medium">{group.title}</h3>
+          <div className="border-b pb-2">
+            <h3 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{group.title}</h3>
             {group.note ? <p className="text-sm text-muted-foreground">{group.note}</p> : null}
           </div>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
             {STANDARD_QUESTIONS.filter((question) => question.group === group.id).map((question) => (
               <QuestionInput key={question.key} question={question} value={saved[question.key]} />
             ))}

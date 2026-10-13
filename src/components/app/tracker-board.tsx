@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useOptimistic, useTransition } from "react";
 
 import type { ApplicationStatus } from "@/lib/applications";
+import { cn } from "@/lib/utils";
+
+import { CompanyAvatar } from "./company-avatar";
 
 export type TrackerCard = {
   applicationId: string;
@@ -16,12 +19,12 @@ export type TrackerCard = {
   followUpAt: string | null;
 };
 
-const COLUMNS: { id: string; title: string; statuses: ApplicationStatus[] }[] = [
-  { id: "saved", title: "Saved", statuses: ["saved"] },
-  { id: "applied", title: "Applied", statuses: ["applied"] },
-  { id: "interview", title: "Interview", statuses: ["interview"] },
-  { id: "offer", title: "Offer", statuses: ["offer"] },
-  { id: "closed", title: "Closed", statuses: ["rejected", "withdrawn"] },
+const COLUMNS: { id: string; title: string; statuses: ApplicationStatus[]; dot: string }[] = [
+  { id: "saved", title: "Drafting", statuses: ["saved"], dot: "bg-muted-foreground/50" },
+  { id: "applied", title: "Applied", statuses: ["applied"], dot: "bg-[oklch(0.62_0.11_250)]" },
+  { id: "interview", title: "Interview", statuses: ["interview"], dot: "bg-[oklch(0.75_0.14_75)]" },
+  { id: "offer", title: "Offer", statuses: ["offer"], dot: "bg-primary" },
+  { id: "closed", title: "Closed", statuses: ["rejected", "withdrawn"], dot: "bg-muted-foreground/30" },
 ];
 
 const STATUS_OPTIONS: { value: ApplicationStatus; label: string }[] = [
@@ -54,7 +57,7 @@ export function TrackerBoard({
 
   if (items.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground">
+      <div className="rounded-2xl border border-dashed bg-background p-10 text-center text-sm text-muted-foreground">
         Applications you tailor show up here. Start from the{" "}
         <Link href={basePath} className="text-primary underline">
           job feed
@@ -66,22 +69,28 @@ export function TrackerBoard({
 
   return (
     <div className="-mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
-      <div className="grid min-w-[900px] grid-cols-5 gap-3">
+      <div className="grid min-w-[960px] grid-cols-5 gap-3">
         {COLUMNS.map((column) => {
           const cards = optimistic.filter((item) => column.statuses.includes(item.status));
           return (
-            <section key={column.id} aria-labelledby={`col-${column.id}`} className="flex flex-col gap-2 rounded-xl bg-muted/60 p-2">
-              <h2 id={`col-${column.id}`} className="px-1 py-1 text-sm font-medium">
-                {column.title} <span className="text-muted-foreground">{cards.length}</span>
+            <section key={column.id} aria-labelledby={`col-${column.id}`} className="flex min-h-48 flex-col gap-2 rounded-2xl border bg-background/60 p-2">
+              <h2 id={`col-${column.id}`} className="flex items-center gap-2 px-2 py-1.5 text-sm font-medium">
+                <span className={cn("size-2 rounded-full", column.dot)} aria-hidden="true" />
+                {column.title} <span className="ml-auto text-xs text-muted-foreground tabular-nums">{cards.length}</span>
               </h2>
               {cards.map((card) => {
                 const followUpDue = card.status === "applied" && card.followUpAt && card.followUpAt <= today;
                 return (
-                  <article key={card.applicationId} className="flex flex-col gap-2 rounded-lg border bg-card p-3 text-sm">
-                    <Link href={`${basePath}/${card.jobId}`} className="font-medium hover:underline">
-                      {card.title}
-                    </Link>
-                    <p className="text-muted-foreground">{card.company}</p>
+                  <article key={card.applicationId} className="surface flex flex-col gap-2 p-3 text-sm">
+                    <div className="flex items-start gap-2.5">
+                      <CompanyAvatar name={card.company} size="sm" />
+                      <div className="min-w-0">
+                        <Link href={`${basePath}/${card.jobId}`} className="line-clamp-2 font-medium leading-snug hover:underline">
+                          {card.title}
+                        </Link>
+                        <p className="truncate text-xs text-muted-foreground">{card.company}</p>
+                      </div>
+                    </div>
                     {card.appliedAt ? <p className="text-xs text-muted-foreground">Applied {shortDate(card.appliedAt)}</p> : null}
                     {followUpDue ? (
                       <p className="inline-flex items-center gap-1 text-xs font-medium text-amber-700">
@@ -101,7 +110,7 @@ export function TrackerBoard({
                           await onStatusChange(card.applicationId, status);
                         });
                       }}
-                      className="h-8 rounded-md border bg-background px-2 text-xs"
+                      className="h-8 rounded-lg border bg-background px-2 text-xs"
                     >
                       {STATUS_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>

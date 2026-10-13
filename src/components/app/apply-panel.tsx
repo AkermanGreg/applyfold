@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import type { TailorResult } from "@/app/app/jobs/[id]/actions";
+import type { TailorResult } from "@/app/actions/application";
 import type { ApplicationStatus, ApplicationView } from "@/lib/applications";
 import type { CoverLetter } from "@/lib/tailor/pdf";
 import type { AnswerSource } from "@/lib/tailor/questions";
@@ -178,7 +178,8 @@ export function ApplyPanel({
   /** Null in demo mode, where the employers are fictional. */
   applyUrl: string | null;
   application: ApplicationView | null;
-  usage: { used: number; limit: number };
+  /** `limit: null` means unlimited (owner accounts). */
+  usage: { used: number; limit: number | null };
   actions: ApplyPanelActions;
   pdfHref: string | null;
   upgradeHref?: string;
@@ -187,7 +188,7 @@ export function ApplyPanel({
   const [extra, setExtra] = useState("");
   const [pending, startTransition] = useTransition();
   const [problem, setProblem] = useState<Extract<TailorResult, { ok: false }> | null>(null);
-  const remaining = Math.max(0, usage.limit - usage.used);
+  const remaining = usage.limit === null ? null : Math.max(0, usage.limit - usage.used);
 
   const tailor = () =>
     startTransition(async () => {
@@ -204,11 +205,11 @@ export function ApplyPanel({
     });
 
   return (
-    <aside className="flex flex-col gap-4 rounded-2xl border bg-card p-5 lg:sticky lg:top-20">
+    <aside className="surface flex flex-col gap-4 p-5">
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-medium">Your application</h2>
         <span className="text-xs text-muted-foreground">
-          {remaining} of {usage.limit} drafts left this month
+          {remaining === null ? "Unlimited drafts" : `${remaining} of ${usage.limit} drafts left this month`}
         </span>
       </div>
 
@@ -301,7 +302,7 @@ export function ApplyPanel({
               </p>
             )}
             <Button variant="ghost" size="sm" onClick={tailor} disabled={pending}>
-              {pending ? "Rewriting…" : "Regenerate draft (uses 1 credit)"}
+              {pending ? "Rewriting…" : remaining === null ? "Regenerate draft" : "Regenerate draft (uses 1 credit)"}
             </Button>
           </div>
         </>

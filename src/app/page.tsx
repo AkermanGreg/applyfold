@@ -1,4 +1,5 @@
 import {
+  ArrowRight,
   BadgeCheck,
   FileText,
   Hand,
@@ -14,6 +15,7 @@ import Link from "next/link";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { brand } from "@/lib/brand";
 import { PLAN_ORDER, PLANS } from "@/lib/plans";
@@ -129,23 +131,26 @@ export default function Home() {
         <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 md:py-24 lg:grid-cols-2">
           <div className="flex flex-col gap-6">
             <Badge variant="secondary" className="w-fit">
-              Now in early access
+              Free to start · for every kind of job
             </Badge>
-            <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
+            <h1 className="font-display text-5xl leading-[1.02] tracking-tight text-balance sm:text-6xl">
               Job applications that sound like you, not like a bot.
             </h1>
             <p className="max-w-xl text-lg text-pretty text-muted-foreground">
               {brand.name} knows your background, finds roles that actually fit, and drafts every application
               with specific, truthful answers. You review, you approve, it submits.
             </p>
-            <WaitlistForm id="hero" />
-            <p className="-mt-4 text-sm text-muted-foreground">
-              Or{" "}
-              <Link href="/demo" className="font-medium text-primary underline-offset-4 hover:underline">
-                try the live demo
-              </Link>{" "}
-              with a sample nurse’s profile. No sign-up.
-            </p>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button asChild size="lg" className="h-11 px-6 text-base">
+                <Link href="/sign-up">
+                  Get started free <ArrowRight aria-hidden="true" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="h-11 px-6 text-base">
+                <Link href="/demo">Try the live demo</Link>
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">5 tailored applications a month free · no credit card · set up in 2 minutes</p>
           </div>
           <ProductPreview />
         </section>
@@ -166,7 +171,7 @@ export default function Home() {
         </section>
 
         <section id="how-it-works" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20 sm:px-6">
-          <h2 className="text-3xl font-semibold tracking-tight">How it works</h2>
+          <h2 className="font-display text-4xl tracking-tight sm:text-5xl">How it works</h2>
           <p className="mt-2 max-w-2xl text-muted-foreground">
             The same 40 form fields and the same &ldquo;tell us about a time when&rdquo; essays, done once and done
             well.
@@ -191,7 +196,7 @@ export default function Home() {
           <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
             <div className="flex items-center gap-2">
               <ShieldCheck className="size-5" aria-hidden="true" />
-              <h2 className="text-3xl font-semibold tracking-tight">The opposite of an auto-apply bot</h2>
+              <h2 className="font-display text-4xl tracking-tight sm:text-5xl">The opposite of an auto-apply bot</h2>
             </div>
             <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
               {principles.map((principle) => (
@@ -206,7 +211,7 @@ export default function Home() {
         </section>
 
         <section id="pricing" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20 sm:px-6">
-          <h2 className="text-3xl font-semibold tracking-tight">Simple pricing</h2>
+          <h2 className="font-display text-4xl tracking-tight sm:text-5xl">Simple pricing</h2>
           <p className="mt-2 text-muted-foreground">Start free. Upgrade when your search picks up.</p>
           <div className="mt-10 grid gap-6 lg:grid-cols-3">
             {PLAN_ORDER.map((id) => {
@@ -215,7 +220,7 @@ export default function Home() {
               return (
                 <div
                   key={id}
-                  className={`flex flex-col rounded-2xl border bg-card p-6 ${featured ? "border-primary ring-1 ring-primary" : ""}`}
+                  className={`surface flex flex-col p-6 ${featured ? "border-primary ring-1 ring-primary" : ""}`}
                 >
                   <div className="flex items-center justify-between">
                     <h3 className="font-medium">{plan.name}</h3>
@@ -225,7 +230,7 @@ export default function Home() {
                   <p className="mt-4 text-3xl font-semibold tracking-tight">{plan.priceLabel}</p>
                   <p className="min-h-5 text-sm text-muted-foreground">{plan.priceNote ?? ""}</p>
                   <p className="mt-3 text-sm">{plan.pitch}</p>
-                  <ul className="mt-5 flex flex-col gap-2 text-sm">
+                  <ul className="mt-5 flex flex-1 flex-col gap-2 text-sm">
                     {plan.features.map((feature) => (
                       <li key={feature} className="flex gap-2">
                         <BadgeCheck className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
@@ -233,6 +238,11 @@ export default function Home() {
                       </li>
                     ))}
                   </ul>
+                  <Button asChild variant={featured ? "default" : "outline"} className="mt-6 h-10 w-full">
+                    <Link href={plan.comingSoon ? "#waitlist" : "/sign-up"}>
+                      {plan.comingSoon ? "Get notified" : id === "free" ? "Get started free" : "Start with Pro"}
+                    </Link>
+                  </Button>
                 </div>
               );
             })}
@@ -241,9 +251,11 @@ export default function Home() {
 
         <section id="waitlist" className="scroll-mt-20 border-t bg-muted/40">
           <div className="mx-auto flex max-w-3xl flex-col items-center gap-5 px-4 py-20 text-center sm:px-6">
-            <h2 className="text-3xl font-semibold tracking-tight">Get early access</h2>
+            <span className="rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">Coming soon</span>
+            <h2 className="font-display text-4xl tracking-tight sm:text-5xl">Autopilot fills the forms for you</h2>
             <p className="text-muted-foreground">
-              We’re inviting people in batches. Tell us your field so we can prioritize the right job sources.
+              Watch the assistant fill real application forms in a live browser, then approve before anything is sent. Get
+              an email when it launches.
             </p>
             <WaitlistForm id="footer" />
           </div>

@@ -3,7 +3,7 @@
 import { RefreshCw } from "lucide-react";
 import { useActionState } from "react";
 
-import type { RefreshState } from "@/app/app/jobs/actions";
+import type { RefreshState } from "@/app/actions/jobs";
 import { Button } from "@/components/ui/button";
 
 export function RefreshMatches({ action }: { action: (previous: RefreshState) => Promise<RefreshState> }) {

@@ -1,10 +1,11 @@
 import { AnswersForm } from "@/components/app/answers-form";
+import { PageHeader } from "@/components/app/page-header";
 import { PreferencesForm } from "@/components/app/preferences-form";
 import { getSavedAnswers } from "@/lib/answers/store";
 import { requireUserId } from "@/lib/auth";
 import { getPreferences } from "@/lib/preferences-store";
 
-import { saveAnswersAction, savePreferencesAction } from "./actions";
+import { saveAnswersAction, savePreferencesAction } from "@/app/actions/preferences";
 
 export const metadata = { title: "Preferences" };
 // Saving preferences searches aggregators and scores matches in `after()`; give it room.
@@ -15,22 +16,19 @@ export default async function PreferencesPage() {
   const [preferences, saved] = await Promise.all([getPreferences(userId), getSavedAnswers(userId)]);
 
   return (
-    <div className="flex flex-col gap-12">
-      <section className="flex flex-col gap-6">
-        <header>
-          <h1 className="text-2xl font-semibold tracking-tight">What you’re looking for</h1>
-          <p className="mt-1 text-muted-foreground">We use this to search job boards and score each role.</p>
-        </header>
+    <div className="flex flex-col gap-6">
+      <PageHeader title="Preferences" description="What you’re looking for, and the answers we reuse on every application." />
+      <section className="surface p-6">
+        <h2 className="font-semibold">Job search</h2>
+        <p className="mt-1 mb-6 text-sm text-muted-foreground">We search job boards for these roles and score each posting against your profile.</p>
         <PreferencesForm initial={preferences} action={savePreferencesAction} />
       </section>
-      <section className="flex flex-col gap-6 border-t pt-10">
-        <header>
-          <h2 className="text-xl font-semibold tracking-tight">Screening answers</h2>
-          <p className="mt-1 max-w-2xl text-muted-foreground">
-            Answer these once and we’ll reuse them on every application, worded to match each employer’s form.
-            Anything left as “ask me” is never guessed.
-          </p>
-        </header>
+      <section className="surface p-6">
+        <h2 className="font-semibold">Screening answers</h2>
+        <p className="mt-1 mb-6 max-w-2xl text-sm text-muted-foreground">
+          Answer once and we’ll fill these in on every application, worded to match each employer’s form. Anything left as
+          “Ask me each time” is never guessed.
+        </p>
         <AnswersForm saved={saved} action={saveAnswersAction} />
       </section>
     </div>

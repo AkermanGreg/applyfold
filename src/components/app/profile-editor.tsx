@@ -81,9 +81,9 @@ export function ProfileEditor({
     });
 
   return (
-    <fieldset disabled={readOnly} className="flex flex-col gap-10">
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium">Contact</h2>
+    <fieldset disabled={readOnly} className="flex flex-col gap-6">
+      <section className="surface flex flex-col gap-4 p-6">
+        <h2 className="font-semibold">Contact</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field id="fullName" label="Full name" value={profile.contact.fullName} onChange={(v) => setContact("fullName", v)} />
           <Field id="email" label="Email" value={profile.contact.email} onChange={(v) => setContact("email", v)} />
@@ -100,8 +100,8 @@ export function ProfileEditor({
         </div>
       </section>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium">Summary</h2>
+      <section className="surface flex flex-col gap-4 p-6">
+        <h2 className="font-semibold">Summary</h2>
         <Field
           id="headline"
           label="Headline"
@@ -120,9 +120,9 @@ export function ProfileEditor({
         </div>
       </section>
 
-      <section className="flex flex-col gap-4">
+      <section className="surface flex flex-col gap-4 p-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium">Experience</h2>
+          <h2 className="font-semibold">Experience</h2>
           {!readOnly ? (
             <Button
               type="button"
@@ -138,7 +138,7 @@ export function ProfileEditor({
           <p className="text-sm text-muted-foreground">No roles yet. Upload a resume or add one.</p>
         ) : null}
         {profile.experience.map((job, index) => (
-          <div key={index} className="flex flex-col gap-4 rounded-xl border p-4">
+          <div key={index} className="flex flex-col gap-4 rounded-xl border bg-muted/30 p-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field id={`job-${index}-title`} label="Title" value={job.title} onChange={(v) => setJob(index, { title: v })} />
               <Field id={`job-${index}-employer`} label="Employer" value={job.employer} onChange={(v) => setJob(index, { employer: v })} />
@@ -187,8 +187,8 @@ export function ProfileEditor({
         ))}
       </section>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium">Skills, licenses & languages</h2>
+      <section className="surface flex flex-col gap-4 p-6">
+        <h2 className="font-semibold">Skills, licenses & languages</h2>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="skills">Skills (comma-separated)</Label>
           <Textarea
@@ -226,7 +226,7 @@ export function ProfileEditor({
 
       {!readOnly ? (
         <div className="sticky bottom-4 flex justify-end">
-          <Button type="button" onClick={save} disabled={pending} className="shadow-sm">
+          <Button type="button" size="lg" onClick={save} disabled={pending} className="h-10 px-5 shadow-lg">
             {pending ? "Saving…" : "Save profile"}
           </Button>
         </div>

@@ -1,8 +1,9 @@
+import { PageHeader } from "@/components/app/page-header";
 import { TrackerBoard } from "@/components/app/tracker-board";
 import { listApplications } from "@/lib/applications";
 import { requireUserId } from "@/lib/auth";
 
-import { setApplicationStatusAction } from "../jobs/[id]/actions";
+import { setApplicationStatusAction } from "@/app/actions/application";
 
 export const metadata = { title: "Tracker" };
 
@@ -12,10 +13,7 @@ export default async function TrackerPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Tracker</h1>
-        <p className="mt-1 text-muted-foreground">Every application in one place. We nudge you to follow up a week after applying.</p>
-      </header>
+      <PageHeader title="Tracker" description="Every application in one place. We nudge you to follow up a week after you apply." />
       <TrackerBoard
         basePath="/app/jobs"
         today={new Date().toISOString()}

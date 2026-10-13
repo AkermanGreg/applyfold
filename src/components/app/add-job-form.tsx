@@ -3,7 +3,7 @@
 import { Link2, Loader2 } from "lucide-react";
 import { useActionState, useState } from "react";
 
-import type { AddJobState } from "@/app/app/jobs/actions";
+import type { AddJobState } from "@/app/actions/jobs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

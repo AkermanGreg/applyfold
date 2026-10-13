@@ -1,88 +1,98 @@
 "use client";
 
-import { CheckCircle2 } from "lucide-react";
+import { ArrowRight, BellRing, Bookmark, Briefcase, MessagesSquare, Send } from "lucide-react";
 import Link from "next/link";
 
 import { ApplyPanel } from "@/components/app/apply-panel";
-import { formatSalary, scoreTone } from "@/components/app/format";
+import { CompanyAvatar } from "@/components/app/company-avatar";
+import { formatSalary } from "@/components/app/format";
 import { JobFeed } from "@/components/app/job-feed";
-import { JobPosting } from "@/components/app/job-posting";
+import { JobDetailLayout } from "@/components/app/job-posting";
+import { PageHeader } from "@/components/app/page-header";
 import { ProfileEditor } from "@/components/app/profile-editor";
+import { ScoreRing } from "@/components/app/score-ring";
 import { TrackerBoard } from "@/components/app/tracker-board";
-import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { DEMO_JOBS, DEMO_PROFILE } from "@/lib/demo/fixtures";
-import { cn } from "@/lib/utils";
 
 import { useDemo } from "./demo-provider";
 
+function Stat({ icon: Icon, label, value, href }: { icon: typeof Briefcase; label: string; value: number; href: string }) {
+  return (
+    <Link href={href} className="surface flex items-center gap-4 p-5 transition-shadow hover:shadow-md">
+      <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-accent-foreground">
+        <Icon className="size-5" aria-hidden="true" />
+      </span>
+      <div>
+        <p className="text-2xl font-semibold tabular-nums">{value}</p>
+        <p className="text-sm text-muted-foreground">{label}</p>
+      </div>
+    </Link>
+  );
+}
+
 export function DemoOverview() {
   const demo = useDemo();
-  const top = demo.feed.filter((item) => item.status === "new").slice(0, 3);
+  const top = demo.feed.filter((item) => item.status === "new").slice(0, 4);
   const followUps = demo.applications.filter((app) => app.status === "applied" && app.followUpAt && app.followUpAt.toISOString() <= demo.now);
+  const count = (status: string) => demo.applications.filter((app) => app.status === status).length;
 
   return (
     <div className="flex flex-col gap-8">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Welcome, Maya.</h1>
-        <p className="mt-1 text-muted-foreground">
-          This is the workspace of a sample ICU nurse. Click around: save or skip jobs, tailor an application, move cards
-          on the tracker.
-        </p>
-      </header>
-      <div className="grid gap-4 lg:grid-cols-3">
-        <section className="rounded-xl border p-5 lg:col-span-2">
-          <h2 className="font-medium">Set up</h2>
-          <ul className="mt-4 flex flex-col gap-3 text-muted-foreground">
-            {["Resume parsed into a profile", "Preferences: ICU / critical care RN, Columbus OH", "Screening answers saved once"].map(
-              (label) => (
-                <li key={label} className="flex items-center gap-3">
-                  <CheckCircle2 className="size-5 text-primary" aria-hidden="true" /> {label}
-                </li>
-              ),
-            )}
-          </ul>
-        </section>
-        <section className="flex flex-col gap-3 rounded-xl border p-5">
-          <h2 className="font-medium">Free plan</h2>
-          <p className="text-sm text-muted-foreground">
-            {demo.limit - demo.used} of {demo.limit} tailored applications left this month
-          </p>
-          <Progress value={(demo.used / demo.limit) * 100} aria-label="Tailored applications used" />
-        </section>
+      <PageHeader
+        title="Welcome back, Maya"
+        description="A sample ICU nurse’s workspace. Save or skip jobs, tailor an application, move cards on the tracker."
+        actions={
+          <Button asChild>
+            <Link href="/demo/jobs">
+              Browse matches <ArrowRight aria-hidden="true" />
+            </Link>
+          </Button>
+        }
+      />
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <Stat icon={Briefcase} label="New matches" value={demo.feed.filter((item) => item.status === "new").length} href="/demo/jobs" />
+        <Stat icon={Bookmark} label="Drafts in progress" value={count("saved")} href="/demo/tracker" />
+        <Stat icon={Send} label="Applied" value={count("applied")} href="/demo/tracker" />
+        <Stat icon={MessagesSquare} label="Interviews" value={count("interview")} href="/demo/tracker" />
       </div>
       {followUps.length ? (
-        <section className="rounded-xl border border-amber-300 bg-amber-50 p-5 text-sm">
-          <h2 className="font-medium text-amber-900">Time to follow up</h2>
+        <section className="flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+          <h2 className="flex items-center gap-2 font-medium text-amber-900">
+            <BellRing className="size-4" aria-hidden="true" /> Time to follow up
+          </h2>
           {followUps.map((app) => {
             const job = DEMO_JOBS.find((item) => item.jobId === app.jobId)!;
             return (
-              <p key={app.id} className="mt-1">
-                <Link href={`/demo/jobs/${job.jobId}`} className="underline">
-                  {job.title} at {job.company}
-                </Link>
-              </p>
+              <Link key={app.id} href={`/demo/jobs/${job.jobId}`} className="flex items-center gap-3 text-sm hover:underline">
+                <CompanyAvatar name={job.company} size="sm" />
+                {job.title} at {job.company}
+              </Link>
             );
           })}
         </section>
       ) : null}
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-medium">Top new matches</h2>
+          <h2 className="font-semibold">Top new matches</h2>
           <Link href="/demo/jobs" className="text-sm text-primary hover:underline">
             See all
           </Link>
         </div>
-        <ul className="grid gap-3 md:grid-cols-3">
+        <ul className="flex flex-col gap-3">
           {top.map((item) => (
-            <li key={item.jobId} className="flex flex-col gap-2 rounded-xl border p-4">
-              <span className={cn("w-fit rounded-md px-2 py-0.5 text-xs font-semibold", scoreTone(item.score))}>{item.score}% fit</span>
-              <Link href={`/demo/jobs/${item.jobId}`} className="font-medium hover:underline">
-                {item.title}
+            <li key={item.jobId}>
+              <Link href={`/demo/jobs/${item.jobId}`} className="surface flex items-center gap-4 p-4 transition-shadow hover:shadow-md">
+                <CompanyAvatar name={item.company} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{item.title}</p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {[item.company, item.location, formatSalary(item.salaryMin, item.salaryMax, item.salaryCurrency)].filter(Boolean).join(" · ")}
+                  </p>
+                  <p className="mt-1 line-clamp-1 text-sm">{item.reason}</p>
+                </div>
+                <ScoreRing score={item.score} />
               </Link>
-              <p className="text-sm text-muted-foreground">
-                {[item.company, formatSalary(item.salaryMin, item.salaryMax, item.salaryCurrency)].filter(Boolean).join(" · ")}
-              </p>
-              <p className="text-sm">{item.reason}</p>
             </li>
           ))}
         </ul>
@@ -95,10 +105,7 @@ export function DemoJobs() {
   const demo = useDemo();
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Jobs for Maya</h1>
-        <p className="mt-1 text-muted-foreground">Scored against her profile. Skipped jobs stay skipped.</p>
-      </header>
+      <PageHeader title="Jobs for Maya" description="Scored against her profile, best fits first. Anything marked “Not for me” stays hidden." />
       <JobFeed items={demo.feed} basePath="/demo/jobs" onStatusChange={demo.setMatchStatus} />
     </div>
   );
@@ -112,22 +119,24 @@ export function DemoJob({ jobId }: { jobId: string }) {
   const application = demo.applications.find((app) => app.jobId === jobId) ?? null;
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
-      <JobPosting job={{ ...item, description: job.description }} />
-      <ApplyPanel
-        applyUrl={null}
-        application={application}
-        usage={{ used: demo.used, limit: demo.limit }}
-        pdfHref={application ? `/demo/cover-letter/${jobId}` : null}
-        upgradeHref="/#pricing"
-        actions={{
-          tailor: () => demo.tailor(jobId),
-          updateAnswer: (answerId, answer) => demo.updateAnswer(jobId, answerId, answer),
-          saveCoverLetter: (letter) => demo.saveCoverLetter(jobId, letter),
-          setStatus: (status) => demo.setApplicationStatus(jobId, status),
-        }}
-      />
-    </div>
+    <JobDetailLayout
+      job={{ ...item, description: job.description }}
+      panel={
+        <ApplyPanel
+          applyUrl={null}
+          application={application}
+          usage={{ used: demo.used, limit: demo.limit }}
+          pdfHref={application ? `/demo/cover-letter/${jobId}` : null}
+          upgradeHref="/#pricing"
+          actions={{
+            tailor: () => demo.tailor(jobId),
+            updateAnswer: (answerId, answer) => demo.updateAnswer(jobId, answerId, answer),
+            saveCoverLetter: (letter) => demo.saveCoverLetter(jobId, letter),
+            setStatus: (status) => demo.setApplicationStatus(jobId, status),
+          }}
+        />
+      }
+    />
   );
 }
 
@@ -135,10 +144,7 @@ export function DemoTracker() {
   const demo = useDemo();
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Tracker</h1>
-        <p className="mt-1 text-muted-foreground">Move a card by changing its status.</p>
-      </header>
+      <PageHeader title="Tracker" description="Move a card by changing its status." />
       <TrackerBoard
         basePath="/demo/jobs"
         today={demo.now}
@@ -162,13 +168,11 @@ export function DemoTracker() {
 
 export function DemoProfile() {
   return (
-    <div className="flex flex-col gap-8">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Maya’s profile</h1>
-        <p className="mt-1 max-w-2xl text-muted-foreground">
-          Parsed from her resume, then reviewed. Every draft cites only what’s here. (Read-only in the demo.)
-        </p>
-      </header>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title="Maya’s profile"
+        description="Parsed from her resume, then reviewed. Every draft cites only what’s here. (Read-only in the demo.)"
+      />
       <ProfileEditor initial={DEMO_PROFILE} readOnly onSave={async () => ({ ok: true })} />
     </div>
   );
