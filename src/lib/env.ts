@@ -22,6 +22,8 @@ const serverEnvSchema = z.object({
   ADZUNA_APP_KEY: z.string().min(1).optional(),
   /** Vercel Cron sends `Authorization: Bearer $CRON_SECRET`. */
   CRON_SECRET: z.string().min(16).optional(),
+  /** Comma-separated emails with unlimited access (owner/staff). Never committed to the repo. */
+  OWNER_EMAILS: z.string().optional(),
   /** Hard ceiling on AI spend per calendar month, in USD. */
   AI_MONTHLY_BUDGET_USD: z.coerce.number().positive().default(40),
 });

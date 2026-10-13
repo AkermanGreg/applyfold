@@ -4,7 +4,8 @@ import { currentUser } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 
 import { db, schema } from "@/db";
-import type { PlanId } from "@/lib/plans";
+import { type Entitlement, entitlementFor, parseOwnerEmails } from "@/lib/entitlements";
+import { serverEnv } from "@/lib/env";
 
 const SEEN_RESOLUTION_MS = 60 * 60 * 1000;
 
@@ -27,8 +28,12 @@ export async function ensureUser(userId: string) {
   return created!;
 }
 
-/** Paid plans fall back to free once their entitlement lapses (webhooks keep this fresh). */
-export function effectivePlan(user: { plan: PlanId; planExpiresAt: Date | null }, now = new Date()): PlanId {
-  if (user.plan === "free") return "free";
-  return user.planExpiresAt && user.planExpiresAt < now ? "free" : user.plan;
+export type AppUser = typeof schema.users.$inferSelect;
+
+export function getEntitlement(user: Pick<AppUser, "email" | "plan" | "planExpiresAt">): Entitlement {
+  return entitlementFor(user, parseOwnerEmails(serverEnv().OWNER_EMAILS));
+}
+
+export async function markOnboarded(userId: string) {
+  await db().update(schema.users).set({ onboardedAt: new Date() }).where(eq(schema.users.id, userId));
 }

@@ -3,15 +3,17 @@ import "server-only";
 import { and, eq, sql } from "drizzle-orm";
 
 import { db, schema } from "@/db";
-import { PLANS, type PlanId } from "@/lib/plans";
+import type { Entitlement } from "@/lib/entitlements";
+import { PLANS } from "@/lib/plans";
 
 export type UsageKind = "tailored_application" | "auto_fill" | "resume_parse";
 
 /** Resume parsing is capped on every plan: it's the one AI call a script could loop on. */
 const RESUME_PARSES_PER_MONTH = 5;
 
-export function monthlyLimit(plan: PlanId, kind: UsageKind): number {
-  const { limits } = PLANS[plan];
+export function monthlyLimit(entitlement: Entitlement, kind: UsageKind): number {
+  if (entitlement.unlimited) return Number.POSITIVE_INFINITY;
+  const { limits } = PLANS[entitlement.plan];
   if (kind === "tailored_application") return limits.tailoredPerMonth;
   if (kind === "auto_fill") return limits.autoFillPerMonth;
   return RESUME_PARSES_PER_MONTH;
@@ -27,12 +29,21 @@ export type UsageResult = { ok: true; used: number; limit: number } | { ok: fals
  * Atomically claim one unit. A single upsert increments only while under the limit, so two
  * parallel requests can't both squeeze past the cap. Call `releaseUsage` if the work fails.
  */
-export async function consumeUsage(userId: string, plan: PlanId, kind: UsageKind): Promise<UsageResult> {
-  const limit = monthlyLimit(plan, kind);
+export async function consumeUsage(userId: string, entitlement: Entitlement, kind: UsageKind): Promise<UsageResult> {
+  const limit = monthlyLimit(entitlement, kind);
   const period = usagePeriod();
   if (limit <= 0) return { ok: false, used: 0, limit };
 
   const table = schema.usageCounters;
+  if (!Number.isFinite(limit)) {
+    // Unlimited accounts still count usage, so cost reporting stays accurate.
+    const [row] = await db()
+      .insert(table)
+      .values({ userId, period, kind, count: 1 })
+      .onConflictDoUpdate({ target: [table.userId, table.period, table.kind], set: { count: sql`${table.count} + 1` } })
+      .returning({ count: table.count });
+    return { ok: true, used: row?.count ?? 1, limit };
+  }
   const [row] = await db()
     .insert(table)
     .values({ userId, period, kind, count: 1 })

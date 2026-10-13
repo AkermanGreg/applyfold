@@ -12,7 +12,7 @@ import { draftApplication } from "@/lib/tailor/draft";
 import type { CoverLetter } from "@/lib/tailor/pdf";
 import { DEFAULT_OPEN_QUESTIONS, type DraftAnswer, planAnswers } from "@/lib/tailor/questions";
 import { consumeUsage, releaseUsage } from "@/lib/usage";
-import { effectivePlan, ensureUser } from "@/lib/users";
+import { ensureUser, getEntitlement } from "@/lib/users";
 
 export type ApplicationStatus = (typeof schema.applicationStatusEnum.enumValues)[number];
 
@@ -60,7 +60,7 @@ export async function tailorApplication(userId: string, jobId: string, extraQues
   if (!profile) throw new MissingProfileError();
   if (!job) throw new Error("Job not found");
 
-  const usage = await consumeUsage(userId, effectivePlan(user), "tailored_application");
+  const usage = await consumeUsage(userId, getEntitlement(user), "tailored_application");
   if (!usage.ok) throw new UsageLimitError(usage.used, usage.limit);
 
   try {

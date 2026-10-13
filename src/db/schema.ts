@@ -38,6 +38,8 @@ export const users = pgTable("users", {
   plan: planEnum().notNull().default("free"),
   planExpiresAt: timestamp({ withTimezone: true }),
   consentedAt: timestamp({ withTimezone: true }),
+  /** Set when the guided onboarding is finished (or skipped); until then /app routes there. */
+  onboardedAt: timestamp({ withTimezone: true }),
   /** Touched at most hourly; the daily cron only scores matches for recently active users. */
   lastSeenAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   ...timestamps,
