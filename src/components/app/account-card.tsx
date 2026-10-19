@@ -1,17 +1,18 @@
-import { Infinity as InfinityIcon, Sparkles } from "lucide-react";
+import { Infinity as InfinityIcon, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 import { Progress } from "@/components/ui/progress";
+import { isAdminEmail } from "@/lib/admin";
 import { requireAppUser } from "@/lib/session";
-import { currentUsage, monthlyLimit } from "@/lib/usage";
+import { creditSummary } from "@/lib/usage";
 
 import { UserMenu } from "./user-menu";
 
 /** Sidebar footer: plan, drafts left this month, and the account menu. */
 export async function AccountCard() {
-  const { userId, entitlement } = await requireAppUser();
-  const used = await currentUsage(userId, "tailored_application");
-  const limit = monthlyLimit(entitlement, "tailored_application");
+  const { userId, user, entitlement } = await requireAppUser();
+  const { used, monthlyLimit: limit, bonus } = await creditSummary(userId, entitlement, "tailored_application");
+  const admin = isAdminEmail(user.email);
 
   return (
     <div className="flex flex-col gap-3">
@@ -30,6 +31,7 @@ export async function AccountCard() {
           <>
             <p className="mt-1 text-xs text-muted-foreground">
               {Math.max(0, limit - used)} of {limit} drafts left this month
+              {bonus ? ` · +${bonus} bonus` : ""}
             </p>
             <Progress className="mt-2 h-1.5" value={Math.min(100, (used / Math.max(1, limit)) * 100)} aria-label="Drafts used" />
             {entitlement.plan === "free" ? (
@@ -40,6 +42,11 @@ export async function AccountCard() {
           </>
         )}
       </div>
+      {admin ? (
+        <Link href="/app/admin" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
+          <ShieldCheck className="size-4" aria-hidden="true" /> Admin
+        </Link>
+      ) : null}
       <div className="px-1">
         <UserMenu showName />
       </div>

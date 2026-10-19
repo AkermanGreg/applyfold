@@ -37,6 +37,8 @@ export const users = pgTable("users", {
   email: text().notNull(),
   plan: planEnum().notNull().default("free"),
   planExpiresAt: timestamp({ withTimezone: true }),
+  /** "comp" when an admin granted the plan by hand; billing webhooks must not overwrite it. */
+  planSource: text(),
   consentedAt: timestamp({ withTimezone: true }),
   /** Set when the guided onboarding is finished (or skipped); until then /app routes there. */
   onboardedAt: timestamp({ withTimezone: true }),
@@ -305,6 +307,40 @@ export const aiUsage = pgTable(
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("ai_usage_created").on(t.createdAt), index("ai_usage_user_created").on(t.userId, t.createdAt)],
+);
+
+/** Bonus credits on top of the monthly plan allowance. Never expire; spent after the allowance. */
+export const userCredits = pgTable(
+  "user_credits",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kind: usageKindEnum().notNull(),
+    balance: integer().notNull().default(0),
+    updatedAt: timestamp({ withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.kind] })],
+);
+
+/** Audit trail of every credit grant and plan comp made from the admin page. */
+export const creditGrants = pgTable(
+  "credit_grants",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kind: text().notNull(),
+    amount: integer().notNull(),
+    note: text(),
+    grantedBy: text().notNull(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("credit_grants_user").on(t.userId, t.createdAt)],
 );
 
 export const waitlist = pgTable("waitlist", {

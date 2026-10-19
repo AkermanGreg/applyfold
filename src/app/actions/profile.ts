@@ -35,7 +35,7 @@ export async function uploadResume(_previous: UploadState, formData: FormData): 
     refresh();
     return { status: "done" };
   } catch (error) {
-    await releaseUsage(userId, "resume_parse");
+    await releaseUsage(userId, "resume_parse", usage.pool);
     if (error instanceof AiBudgetExceededError || error instanceof AiOutputError) {
       return { status: "error", message: error.message };
     }

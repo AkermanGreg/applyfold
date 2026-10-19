@@ -1,4 +1,4 @@
-import { ArrowRight, BellRing, Bookmark, Briefcase, CheckCircle2, Circle, MessagesSquare, Send } from "lucide-react";
+import { ArrowRight, BellRing, Bookmark, Briefcase, CheckCircle2, Circle, MessagesSquare, Send, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
 import { CompanyAvatar } from "@/components/app/company-avatar";
@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { ScoreRing } from "@/components/app/score-ring";
 import { Button } from "@/components/ui/button";
 import { listApplications } from "@/lib/applications";
+import { isAdminEmail } from "@/lib/admin";
 import { getSavedAnswers } from "@/lib/answers/store";
 import { getFeed } from "@/lib/feed";
 import { getPreferences } from "@/lib/preferences-store";
@@ -30,7 +31,7 @@ function Stat({ icon: Icon, label, value, href }: { icon: typeof Briefcase; labe
 }
 
 export default async function OverviewPage() {
-  const { userId } = await requireOnboardedUser();
+  const { userId, user } = await requireOnboardedUser();
   const [{ profile }, preferences, saved, feed, applications] = await Promise.all([
     getProfileRecord(userId),
     getPreferences(userId),
@@ -58,11 +59,20 @@ export default async function OverviewPage() {
         title={`Welcome back${firstName ? `, ${firstName}` : ""}`}
         description="Here’s where your search stands today."
         actions={
-          <Button asChild>
-            <Link href="/app/jobs">
-              Browse matches <ArrowRight aria-hidden="true" />
-            </Link>
-          </Button>
+          <>
+            {isAdminEmail(user.email) ? (
+              <Button asChild variant="outline">
+                <Link href="/app/admin">
+                  <ShieldCheck aria-hidden="true" /> Admin
+                </Link>
+              </Button>
+            ) : null}
+            <Button asChild>
+              <Link href="/app/jobs">
+                Browse matches <ArrowRight aria-hidden="true" />
+              </Link>
+            </Button>
+          </>
         }
       />
 

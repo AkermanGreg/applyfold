@@ -105,7 +105,7 @@ export async function tailorApplication(userId: string, jobId: string, extraQues
     );
     return { applicationId: application!.id, usage };
   } catch (error) {
-    await releaseUsage(userId, "tailored_application");
+    await releaseUsage(userId, "tailored_application", usage.pool);
     throw error;
   }
 }

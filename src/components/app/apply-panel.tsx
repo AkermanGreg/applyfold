@@ -178,8 +178,8 @@ export function ApplyPanel({
   /** Null in demo mode, where the employers are fictional. */
   applyUrl: string | null;
   application: ApplicationView | null;
-  /** `limit: null` means unlimited (owner accounts). */
-  usage: { used: number; limit: number | null };
+  /** `remaining: null` means unlimited (owner accounts). Includes bonus credits. */
+  usage: { remaining: number | null; bonus?: number };
   actions: ApplyPanelActions;
   pdfHref: string | null;
   upgradeHref?: string;
@@ -188,7 +188,7 @@ export function ApplyPanel({
   const [extra, setExtra] = useState("");
   const [pending, startTransition] = useTransition();
   const [problem, setProblem] = useState<Extract<TailorResult, { ok: false }> | null>(null);
-  const remaining = usage.limit === null ? null : Math.max(0, usage.limit - usage.used);
+  const remaining = usage.remaining;
 
   const tailor = () =>
     startTransition(async () => {
@@ -209,7 +209,9 @@ export function ApplyPanel({
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-medium">Your application</h2>
         <span className="text-xs text-muted-foreground">
-          {remaining === null ? "Unlimited drafts" : `${remaining} of ${usage.limit} drafts left this month`}
+          {remaining === null
+            ? "Unlimited drafts"
+            : `${remaining} ${remaining === 1 ? "draft" : "drafts"} left${usage.bonus ? ` (incl. ${usage.bonus} bonus)` : " this month"}`}
         </span>
       </div>
 

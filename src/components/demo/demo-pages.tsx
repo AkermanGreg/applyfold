@@ -125,7 +125,7 @@ export function DemoJob({ jobId }: { jobId: string }) {
         <ApplyPanel
           applyUrl={null}
           application={application}
-          usage={{ used: demo.used, limit: demo.limit }}
+          usage={{ remaining: Math.max(0, demo.limit - demo.used) }}
           pdfHref={application ? `/demo/cover-letter/${jobId}` : null}
           upgradeHref="/#pricing"
           actions={{

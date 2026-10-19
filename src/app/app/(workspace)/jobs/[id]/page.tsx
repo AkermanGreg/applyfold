@@ -5,7 +5,7 @@ import { JobDetailLayout } from "@/components/app/job-posting";
 import { getApplicationForJob } from "@/lib/applications";
 import { getJobForUser, toFeedItem } from "@/lib/feed";
 import { requireAppUser } from "@/lib/session";
-import { currentUsage, monthlyLimit } from "@/lib/usage";
+import { creditSummary } from "@/lib/usage";
 
 import { saveCoverLetterAction, setApplicationStatusAction, tailorAction, updateAnswerAction } from "@/app/actions/application";
 
@@ -17,14 +17,13 @@ export default async function JobPage({ params }: PageProps<"/app/jobs/[id]">) {
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
-  const [row, application, used] = await Promise.all([
+  const [row, application, credits] = await Promise.all([
     getJobForUser(userId, id),
     getApplicationForJob(userId, id),
-    currentUsage(userId, "tailored_application"),
+    creditSummary(userId, entitlement, "tailored_application"),
   ]);
   if (!row) notFound();
   const item = toFeedItem(row.match, row.job);
-  const limit = monthlyLimit(entitlement, "tailored_application");
 
   return (
     <JobDetailLayout
@@ -33,7 +32,7 @@ export default async function JobPage({ params }: PageProps<"/app/jobs/[id]">) {
         <ApplyPanel
           applyUrl={row.job.applyUrl}
           application={application}
-          usage={{ used, limit: Number.isFinite(limit) ? limit : null }}
+          usage={{ remaining: credits.remaining, bonus: credits.bonus }}
           pdfHref={application ? `/app/applications/${application.id}/cover-letter` : null}
           actions={{
             tailor: tailorAction.bind(null, id),
